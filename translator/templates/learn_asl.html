@@ -1,0 +1,173 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Learn ASL — ASL Lite</title>
+<style>
+:root{
+  --bg:#0f1724; --card:#0b1220; --text:#e6eef8; --muted:#9fb0c8; --accent:#6ee7b7;
+  --glass: rgba(255,255,255,0.03);
+}
+[data-theme="light"]{
+  --bg:#ffffff; --card:#ffffff; --text:#0b1220; --muted:#4b5563; --accent:#0ea5a0;
+  --glass: rgba(0,0,0,0.03);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:var(--text);background:var(--bg);}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:transparent;position:sticky;top:0;backdrop-filter: blur(6px);z-index:20;}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:1.05rem}
+.logo{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;color:var(--bg);font-weight:800}
+.nav{display:flex;gap:12px;align-items:center}
+.nav a{padding:8px 12px;border-radius:10px;text-decoration:none;color:var(--muted);font-weight:600}
+.nav a:hover{background:var(--glass);color:var(--text)}
+.container{max-width:1100px;margin:28px auto;padding:18px;}
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:14px;padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+.footer{margin-top:28px;padding:18px;text-align:center;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.lesson{padding:12px;border-radius:10px;display:flex;flex-direction:column;gap:8px}
+.button{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+.primary{background:linear-gradient(90deg,var(--accent),#60a5fa);color:var(--bg)}
+.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)} .nav{display:none}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+.controls{display:flex;gap:8px;align-items:center}
+.toggle{padding:8px;border-radius:10px;background:var(--glass);cursor:pointer;border:1px solid rgba(255,255,255,0.03)}
+/* Video Modal */
+#videoModal{
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.8);
+    justify-content:center; align-items:center;
+    z-index:50;
+}
+#videoModal video{
+    max-width:90%; max-height:80%;
+    border-radius:10px;
+}
+#closeVideo{
+    position:absolute;
+    top:8px; right:8px;
+    padding:6px 12px;
+    background:red;
+    color:white;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+<header class="header card">
+  <div class="brand"><div class="logo">T</div><div>TUNA</div></div>
+  <nav class="nav" aria-label="Main Navigation">
+    <a href="{% url 'home' %}">Home</a>
+    <a href="{% url 'learn_asl' %}">Learn ASL</a>
+    <a href="{% url 'about' %}">About Us</a>
+    <a href="{% url 'asl' %}" id="demo-link">Try Detector</a>
+  </nav>
+  <div class="controls">
+    <button class="toggle" id="theme-toggle" aria-label="Toggle theme">🌗</button>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card">
+    <h1 style="margin-top:0">Learn ASL — Basic Lessons</h1>
+    <p style="color:var(--muted)">These bite-sized lessons teach common ASL signs. Click a lesson to see a demo and practice with your camera.</p>
+
+    <div class="grid">
+      <div class="lesson card">
+        <h3>Sample Greeting</h3>
+        <p style="color:var(--muted)">Hello</p>
+        <button class="button primary" onclick="openLesson('greetings')">Open</button>
+      </div>
+      <div class="lesson card">
+        <h3>Sample Word</h3>
+        <p style="color:var(--muted)">First</p>
+        <button class="button primary" onclick="openLesson('words')">Open</button>
+      </div>
+      <div class="lesson card">
+        <h3>ASL Alphabet</h3>
+        <p style="color:var(--muted)">A-Z</p>
+        <button class="button primary" onclick="openLesson('alphabet')">Open</button>
+      </div>
+    </div>
+
+    <section style="margin-top:18px">
+      <h2>Practice with Detector</h2>
+      <p style="color:var(--muted)">Use the detector to practice signs in real-time. Make sure to allow camera access.</p>
+      <a href="{% url 'asl' %}" class="button secondary">Open Detector</a>
+    </section>
+  </div>
+
+  <!-- Video Modal -->
+  <div id="videoModal">
+    <div style="position:relative;">
+        <video id="lessonVideo" controls></video>
+        <button id="closeVideo">Close</button>
+    </div>
+  </div>
+
+  <footer class="footer card">
+    <div>© TUNA — We care.</div>
+  </footer>
+</main>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const saved = localStorage.getItem('asl_theme') || 'dark';
+  root.setAttribute('data-theme', saved);
+  btn.addEventListener('click', ()=>{
+    const cur = root.getAttribute('data-theme') === 'light' ? 'dark':'light';
+    root.setAttribute('data-theme', cur);
+    localStorage.setItem('asl_theme', cur);
+  });
+
+  // Lesson Video Modal
+  const modal = document.getElementById('videoModal');
+  const video = document.getElementById('lessonVideo');
+  const closeBtn = document.getElementById('closeVideo');
+
+const lessons = {
+    'greetings': "{% static 'JaoVid/asl_hello.mp4' %}",
+    'words':     "{% static 'JaoVid/asl_first.mp4' %}",
+    'alphabet':  "{% static 'JaoVid/asl_alphabet.mp4' %}"
+};
+
+
+  window.openLesson = function(name){
+    if(lessons[name]){
+        video.src = lessons[name];
+        modal.style.display = 'flex';
+        video.play();
+        video.scrollIntoView({behavior:'smooth'});
+    } else {
+        alert('No video available for ' + name);
+    }
+  };
+
+  closeBtn.addEventListener('click', () => {
+    video.pause();
+    video.currentTime = 0;
+    modal.style.display = 'none';
+  });
+
+  // Optional: close modal by clicking outside the video
+  modal.addEventListener('click', (e) => {
+    if(e.target === modal){
+        video.pause();
+        video.currentTime = 0;
+        modal.style.display = 'none';
+    }
+  });
+
+})();
+</script>
+</body>
+</html>

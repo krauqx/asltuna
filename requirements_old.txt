@@ -1,0 +1,28 @@
+# Core Django & Channels (WebSocket support)
+Django==5.0.6
+channels==4.1.0
+daphne==4.1.2
+
+# Machine Learning (TensorFlow & Mediapipe)
+tensorflow==2.15.0
+mediapipe==0.10.9
+opencv-python==4.8.1.78
+
+# Data & Utilities
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.2
+matplotlib==3.8.3
+
+# Translation & Speech (used in ASL translator)
+deep-translator==1.11.4
+gTTS==2.5.4
+
+# Web utilities
+requests==2.32.3
+protobuf==4.25.3
+asgiref==3.7.2
+sqlparse==0.5.1
+
+# Optional: if you use static templates and language tools
+language_tool_python==2.9.4

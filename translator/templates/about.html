@@ -1,0 +1,95 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>About Us — TUNA</title>
+<style>
+:root{
+  --bg:#0f1724; --card:#0b1220; --text:#e6eef8; --muted:#9fb0c8; --accent:#6ee7b7;
+  --glass: rgba(255,255,255,0.03);
+}
+[data-theme="light"]{
+  --bg:#ffffff; --card:#ffffff; --text:#0b1220; --muted:#4b5563; --accent:#0ea5a0;
+  --glass: rgba(0,0,0,0.03);
+}
+*{box-sizing:border-box;}
+html,body{
+  height:100%;
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+  color:var(--text);
+  background:var(--bg);
+}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:transparent;position:sticky;top:0;backdrop-filter: blur(6px);z-index:20;}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:1.05rem}
+.logo{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;color:var(--bg);font-weight:800}
+.nav{display:flex;gap:12px;align-items:center}
+.nav a{padding:8px 12px;border-radius:10px;text-decoration:none;color:var(--muted);font-weight:600}
+.nav a:hover{background:var(--glass);color:var(--text)}
+.container{max-width:1100px;margin:28px auto;padding:18px;}
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:14px;padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+.footer{margin-top:28px;padding:18px;text-align:center;color:var(--muted)}
+.section{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+@media(max-width:900px){.section{grid-template-columns:1fr} .nav{display:none}}
+.controls{display:flex;gap:8px;align-items:center}
+.toggle{padding:8px;border-radius:10px;background:var(--glass);cursor:pointer;border:1px solid rgba(255,255,255,0.03)}
+</style>
+</head>
+<body>
+<header class="header card">
+  <div class="brand"><div class="logo">T</div><div>TUNA</div></div>
+  <nav class="nav" aria-label="Main Navigation">
+    <a href="{% url 'home' %}">Home</a>
+    <a href="{% url 'learn_asl' %}">Learn ASL</a>
+    <a href="{% url 'about' %}">About Us</a>
+    <a href="{% url 'asl' %}" id="demo-link">Try Detector</a>
+  </nav>
+  <div class="controls">
+    <button class="toggle" id="theme-toggle" aria-label="Toggle theme">🌗</button>
+  </div>
+</header>
+
+<main class="container">
+  <div class="section">
+    <div class="card">
+      <h1 style="margin-top:0">About TUNA</h1>
+      <p style="color:var(--muted)">TUNA is a tool to bridge the gaps between the deaf or mute community to speaking community.</p>
+      <h3>Mission</h3>
+      <p style="color:var(--muted)">To make ASL learning accessible and to provide tools that help bridge communication gaps.</p>
+      <h3>Team</h3>
+      <ul style="color:var(--muted)">
+        <li>Project Lead — Dwayt</li>
+        <li>Frontend & ML Integration — Ej, Dwayt, JanBiktor</li>
+        <li>Documentation — JanBitor, Niglao</li>
+        <li>Call boy — Niglao</li>
+        <li>Advisor — Ser Dok</li>
+      </ul>
+    </div>
+    <aside class="card">
+      <h3 style="margin-top:0">Contact</h3>
+      <p style="color:var(--muted)">Email: <strong>namuco.290794@bacoor.sti.edu.ph</strong></p>
+    </aside>
+  </div>
+
+  <footer class="footer card">
+    <div>© TUNA — We care.</div>
+  </footer>
+</main>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const saved = localStorage.getItem('asl_theme') || 'dark';
+  root.setAttribute('data-theme', saved);
+  btn.addEventListener('click', ()=>{
+    const cur = root.getAttribute('data-theme') === 'light' ? 'dark':'light';
+    root.setAttribute('data-theme', cur);
+    localStorage.setItem('asl_theme', cur);
+  });
+})();
+</script>
+</body>
+</html>

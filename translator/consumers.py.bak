@@ -1,0 +1,67 @@
+# translator/consumers.py
+import json, base64
+import numpy as np
+import cv2
+import mediapipe as mp
+from channels.generic.websocket import AsyncWebsocketConsumer
+from tensorflow.keras.models import load_model
+
+mp_holistic = mp.solutions.holistic
+
+# Load model once
+from django.conf import settings
+import os
+
+model = load_model(os.path.join(settings.BASE_DIR, 'translator', 'action.h5'))
+
+actions = np.array(['first', 'good', 'goodbye', 'hello', "I'm finished", "it was delicious", "me", "morning", "shower", "whitespace"])
+
+sequence = []
+sentence = []
+predictions = []
+threshold = 0.95
+
+def extract_keypoints(results):
+    pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(33*4)
+    face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(468*3)
+    lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
+    rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
+    return np.concatenate([pose, face, lh, rh])
+
+class ASLConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        self.holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+
+    async def disconnect(self, close_code):
+        self.holistic.close()
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        image_data = base64.b64decode(data['image'].split(',')[1])
+        nparr = np.frombuffer(image_data, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        frame = cv2.flip(frame, 1)
+        image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = self.holistic.process(image_rgb)
+
+
+        keypoints = extract_keypoints(results)
+        global sequence, sentence, predictions
+        sequence.append(keypoints)
+        sequence = sequence[-30:]
+
+        if len(sequence) == 30:
+            res = model.predict(np.expand_dims(sequence, axis=0))[0]
+            predictions.append(np.argmax(res))
+            if np.unique(predictions[-10:])[0] == np.argmax(res):
+                if res[np.argmax(res)] > threshold:
+                    if len(sentence) == 0 or actions[np.argmax(res)] != sentence[-1]:
+                        if actions[np.argmax(res)] != 'whitespace':
+                            sentence.append(actions[np.argmax(res)])
+            if len(sentence) > 5:
+                sentence = sentence[-5:]
+
+        await self.send(text_data=json.dumps({
+            'translation': ' '.join(sentence)
+        }))

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: asl-translator-web
+    env: docker
+    plan: starter
+    region: singapore
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: PORT
+        value: "8000"
