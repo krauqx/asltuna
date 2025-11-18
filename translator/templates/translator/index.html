@@ -118,7 +118,7 @@ const translation = document.getElementById("translation");
 const translated = document.getElementById("translated");
 const img = document.getElementById("video");
 
-const socket = new WebSocket("ws://localhost:8000/ws/translate/");
+const socket = new WebSocket("wss://asltuna.onrender.com/ws/translate/");
 socket.binaryType = "arraybuffer";
 
 socket.onmessage = (event) => {
